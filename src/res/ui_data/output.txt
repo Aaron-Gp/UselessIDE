@@ -1,0 +1,23 @@
+Compiling single file...
+------------------
+- Filename: D:/Qt-Dev/Quick_IDE/file_compiler.cpp
+- Compiler Set Name: MinGW GCC 11.2.0 64-bit Debug
+
+Processing C++ source file:
+------------------
+C++ Compiler: D:/Program Files/RedPanda-Cpp/MinGW64/bin/g++.exe
+Command: g++.exe  "D:/Qt-Dev/Quick_IDE/file_compiler.cpp" -o "D:/Qt-Dev/Quick_IDE/file_compiler.exe" -g3 -pipe
+In file included from D:/Qt-Dev/Quick_IDE/file_compiler.cpp:1:
+D:/Qt-Dev/Quick_IDE/view_model.h:3:10: fatal error: QFileDialog: No such file or directory
+    3 | #include <QFileDialog>
+      |          ^~~~~~~~~~~~~
+compilation terminated.
+
+
+Compile Result:
+------------------
+- Errors: 1
+- Warnings: 0
+- Output Filename: D:/Qt-Dev/Quick_IDE/file_compiler.exe
+- Output Size: 0 字节
+- Compilation Time: 0.304 secs
