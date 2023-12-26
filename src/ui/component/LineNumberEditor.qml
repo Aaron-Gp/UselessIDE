@@ -16,6 +16,7 @@ Item {
     Flickable {
         id: flick
         boundsMovement: Flickable.StopAtBounds
+
         anchors {
             fill: parent
         }
@@ -101,7 +102,7 @@ Item {
 
         MouseArea{
             id: mouseArea
-                anchors.fill: parent
+            anchors.fill: parent
             propagateComposedEvents: true
             onWheel: (wheel)=>{
                 if (wheel.pixelDelta === Qt.point(0, 0)
@@ -117,6 +118,8 @@ Item {
                     else {
                         fontPointSize = Math.max(fontPointSize - 1, 10)
                     }
+                }else{
+                    wheel.accepted=false
                 }
             }
         }

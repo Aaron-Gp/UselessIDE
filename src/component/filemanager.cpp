@@ -67,15 +67,15 @@ void FileManager::openFile(const QString &path){
         QFile file(filePath);
         QByteArray fileContent;
         if (file.open(QFile::ReadOnly | QFile::Text)){
-            fileContent = file.readAll();
-            qDebug()<<fileContent.mid(0,100);
             auto f = new File;
+            f->fileContent = file.readAll();
+            qDebug()<<fileContent.mid(0,100);
             f->path = filePath;
             f->hasSaved = true;
             f->info = new QFileInfo(file);
             f->title = filePath.split("/").last();
             m_fileMap.insert(filePath, f);
-            emit fileOpen(filePath, filePath.split("/").last() ,QString(fileContent));
+            emit fileOpen(filePath, filePath.split("/").last(),"");
             file.close();
         }else{
             emit showError("cannot open file " +filePath);
@@ -149,6 +149,8 @@ void FileManager::setTextDocument(QString id, QQuickTextDocument *quickDocument)
     highlighter->setDocument(f->document);
     f->cursor = new QTextCursor(f->document);
     f->command = new CursorCommand(f->document);
+    f->cursor->insertText(f->fileContent);
+    f->fileContent = nullptr;
 }
 
 bool FileManager::needSaveAs()

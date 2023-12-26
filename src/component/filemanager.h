@@ -14,6 +14,7 @@ struct File{
     QString path;
     QString title;
 
+    QByteArray fileContent;
     QFileInfo* info;
     QTextDocument* document;
     QSyntaxHighlighter* highlighter;

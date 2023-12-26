@@ -10,6 +10,7 @@ Window {
         FluApp.init(app)
         FluTheme.darkMode = FluThemeType.System
         FluTheme.enableAnimation = true
+        FluTheme.nativeText = false
         FluApp.routes = {
             "/": "qrc:/UselessIDE/ui/window/MainWindow.qml",
             "/about":"qrc:/UselessIDE/ui/window/AboutWindow.qml",
