@@ -258,11 +258,7 @@ Item {
                         width: visible ? 24 : 0
                         height: 24
                         visible: {
-                            if(closeButtonVisibility === FluTabViewType.Nerver)
-                                return false
-                            if(closeButtonVisibility === FluTabViewType.OnHover)
-                                return item_mouse_hove.containsMouse || item_btn_close.hovered
-                            return true
+                            return tab_nav.currentIndex === index
                         }
                         anchors{
                             right: parent.right
@@ -273,7 +269,7 @@ Item {
                             if(FileManager.needSaveWhenClose()){
                                 dialog_close.open()
                             }else{
-                                tab_model.remove(tab_nav.currentIndex)
+                                FileManager.closeFile()
                             }
                         }
                     }
@@ -294,9 +290,11 @@ Item {
         id: filesSaveDialog
         title: "文件另存为"
         fileMode: FileDialog.SaveFile
+        defaultSuffix: "cpp"
         onAccepted: {
             console.log("You chose: " + filesSaveDialog.file)
             FileManager.saveFileAs(filesSaveDialog.file)
+            FileManager.closeFile()
         }
     }
 
@@ -313,7 +311,7 @@ Item {
         negativeText:"不保存"
         buttonFlags: FluContentDialogType.NegativeButton | FluContentDialogType.NeutralButton | FluContentDialogType.PositiveButton
         onNegativeClicked:{
-            tab_model.remove(tab_nav.currentIndex)
+            FileManager.closeFile()
         }
         positiveText:"保存"
         neutralText:"取消"
@@ -322,8 +320,8 @@ Item {
                 filesSaveDialog.open()
             }else{
                 FileManager.saveFile()
+                FileManager.closeFile()
             }
-            tab_model.remove(tab_nav.currentIndex)
         }
     }
 
@@ -371,6 +369,18 @@ Item {
         function onFileSavingAs(id, title){
             tab_model.setProperty(tab_nav.currentIndex, "title", title)
             tab_model.setProperty(tab_nav.currentIndex, "id", id)
+        }
+
+        function onCanFileClose(){
+            if(FileManager.needSaveWhenClose()){
+                dialog_close.open()
+            }else{
+                FileManager.closeFile()
+            }
+        }
+
+        function onFileClose(){
+            tab_model.remove(tab_nav.currentIndex)
         }
     }
 }

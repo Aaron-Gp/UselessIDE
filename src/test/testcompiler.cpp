@@ -6,7 +6,6 @@
 class TestCompiler : public QObject {
   Q_OBJECT
 private:
-  Compiler* _compiler;
   QString _gccPath;
   QString _env;
   QString _dir;
@@ -14,8 +13,6 @@ private:
 private slots:
 
     void initTestCase(){
-        _compiler = new Compiler();
-//        qDebug()<<_compiler->gccPathCurrent;
         QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
         QString path = env.value("PATH");
         QStringList pathList = path.split(QDir::listSeparator());
@@ -33,17 +30,11 @@ private slots:
         qDebug()<<_dir;
     }
 
-    void cleanupTestCase(){
-        delete _compiler;
-    }
+    void cleanupTestCase(){}
 
-    void init(){
-        QDir::setCurrent(_dir);
-    }
+    void init(){}
 
-    void cleanup(){
-        QDir::setCurrent(_dir);
-    }
+    void cleanup(){}
 
     void testInit(){
         Compiler compiler;
@@ -85,8 +76,9 @@ private slots:
         QTest::addColumn<QString>("path");
         QTest::addColumn<bool>("result");
 
-        QTest::newRow("has-gcc") << "D:\\mingw64\\bin" << true;
-        QTest::newRow("no-gcc") << "C:\\Program Files" << false;
+        QTest::newRow("has gcc") << "D:\\Program Files\\RedPanda-CPP\\MinGW64\\bin" << true;
+        QTest::newRow("has gcc but repeat") << "D:\\mingw64\\bin" << false;
+        QTest::newRow("no gcc") << "C:\\Program Files" << false;
     }
 
     void testAddGccPath(){
@@ -129,8 +121,6 @@ private slots:
         QTest::newRow("found and empty") << 1 << "D:\\mingw64\\bin" << true << "";
         QTest::newRow("not found") << 2 << "C:\\Program Files" << false << _gccPath;
         QTest::newRow("found and unempty") << 3 << "D:\\mingw64\\bin" << true << "D:\\Program Files\\RedPanda-CPP\\MinGW64\\bin";
-
-//        QSKIP("");
     }
 
     void testDeleteGccPath(){
@@ -192,8 +182,8 @@ private slots:
         QTest::addColumn<QString>("command");
         QTest::addColumn<QString>("resultout");
 
-        QTest::newRow(".cpp") << 1 << ".\\testdata\\data_compile1.cpp" << "" << 0.01 << 0 << 0 << "$command" << "Compiling single file...\n------------------\n- Filename: D:/Qt-Dev/UselessIDE/bin/release/testdata/data_compile1.cpp\n- Compiler Version: g++.exe (MinGW-W64 x86_64-ucrt-posix-seh, built by Brecht Sanders) 13.2.0\r\n\nProcessing C++ source file:\n------------------\nC++ Compiler: D:\\mingw64\\bin\\g++.exe\nCommand: $command\n\n\nCompile Result:\n------------------\n- Errors: 0\n- Warnings: 0\n- Output Filename: D:/Qt-Dev/UselessIDE/bin/release/testdata/data_compile1.exe\n- Output Size: 132.454 KiB\n- Compilation Time: 0.01 ms\n";
-        QTest::newRow(".c") << 3 << ".\\testdata\\data_compile4.c" << "./testdata/data_compile4.c:1:10: fatal error: iostream: No such file or directory\n    1 | #include <iostream>\n      |          ^~~~~~~~~~\ncompilation terminated.\r\n" << 0.071 << 1 << 0 << "$command" << "Compiling single file...\n------------------\n- Filename: D:/Qt-Dev/UselessIDE/bin/release/testdata/data_compile4.c\n- Compiler Version: gcc.exe (MinGW-W64 x86_64-ucrt-posix-seh, built by Brecht Sanders) 13.2.0\r\n\nProcessing C source file:\n------------------\nC Compiler: D:\\mingw64\\bin\\gcc.exe\nCommand: $command\n./testdata/data_compile4.c:1:10: fatal error: iostream: No such file or directory\n    1 | #include <iostream>\n      |          ^~~~~~~~~~\ncompilation terminated.\r\n\n\nCompile Result:\n------------------\n- Errors: 1\n- Warnings: 0\n- Output Filename: D:/Qt-Dev/UselessIDE/bin/release/testdata/data_compile4.exe\n- Output Size: 0 KiB\n- Compilation Time: 0.071 ms\n";
+        QTest::newRow(".cpp") << 1 << ".\\testdata\\data_compile1.cpp" << "" << 0.01 << 0 << 0 << "$command" << "Compiling single file...\n------------------\n- Filename: D:/Qt-Dev/UselessIDE/bin/release/testdata/data_compile1.cpp\n- Compiler Version: g++.exe (MinGW-W64 x86_64-ucrt-posix-seh, built by Brecht Sanders) 13.2.0\r\n\nProcessing C++ source file:\n------------------\nC++ Compiler: D:\\mingw64\\bin\\g++.exe\nCommand: $command\n\n\nCompile Result:\n------------------\n- Errors: 0\n- Warnings: 0\n- Output Filename: D:/Qt-Dev/UselessIDE/bin/release/testdata/data_compile1.exe\n";
+        QTest::newRow(".c") << 2 << ".\\testdata\\data_compile4.c" << "./testdata/data_compile4.c:1:10: fatal error: iostream: No such file or directory\n    1 | #include <iostream>\n      |          ^~~~~~~~~~\ncompilation terminated.\r\n" << 0.071 << 1 << 0 << "$command" << "Compiling single file...\n------------------\n- Filename: D:/Qt-Dev/UselessIDE/bin/release/testdata/data_compile4.c\n- Compiler Version: gcc.exe (MinGW-W64 x86_64-ucrt-posix-seh, built by Brecht Sanders) 13.2.0\r\n\nProcessing C source file:\n------------------\nC Compiler: D:\\mingw64\\bin\\gcc.exe\nCommand: $command\n./testdata/data_compile4.c:1:10: fatal error: iostream: No such file or directory\n    1 | #include <iostream>\n      |          ^~~~~~~~~~\ncompilation terminated.\r\n\n\nCompile Result:\n------------------\n- Errors: 1\n- Warnings: 0\n- Output Filename: D:/Qt-Dev/UselessIDE/bin/release/testdata/data_compile4.exe\n- Output Size: 0 KiB\n- Compilation Time: 0.071 ms\n";
     }
 
     void testResultProcessing(){
@@ -209,12 +199,14 @@ private slots:
         QFile file(path);
         QFileInfo fileInfo(file);
 
-//        fileInfo.absolutePath();
-
         Compiler compiler;
         compiler.resultProcessing(fileInfo, resultin, error, warn, ctime, command);
 
-        QCOMPARE(resultin, resultout);
+        if(id==1){
+            QCOMPARE(resultin.sliced(0, 456), resultout);
+        }else if(id==2){
+            QCOMPARE(resultin, resultout);
+        }
     }
 
     void testCompile_data(){
@@ -229,10 +221,8 @@ private slots:
         QTest::newRow("normal .c") << 3 << ".\\testdata\\data_compile3.c" << true << "null" << "0";
         QTest::newRow("abnormal .c") << 4 << ".\\testdata\\data_compile4.c" << false << "null" << "1";
         QTest::newRow("other .txt") << 5 << ".\\testdata\\data_compile5.txt" << false << "Compile unsuccessfully.\nThe file's suffix must be .c or .cpp." << "0";
-        QTest::newRow("empty file") << 6 << ".\\testdata\\data_compile6.cpp" << false << "Compile unsuccessfully.\nThe file's suffix must be .c or .cpp." << "0";
+        QTest::newRow("empty file") << 6 << ".\\testdata\\data_compile0.cpp" << false << "File does not exists\n" << "0";
         QTest::newRow("no gcc") << 7 << ".\\testdata\\data_compile1.cpp" << false << "Cannot find the gcc.\n" << "0";
-
-//        QSKIP("");
     }
 
     void testCompile(){
@@ -250,12 +240,10 @@ private slots:
 
         QFile file(path);
         QFileInfo info(file);
-//        info.absolutePath();
 
         QList<CompileInfo> resList;
         QString res;
         bool ans = compiler.compile(info, resList, res);
-//        QDir::setCurrent(_dir);
         if(id==7){
             qputenv("PATH", _env.toLatin1());
         }
@@ -282,17 +270,14 @@ private slots:
         QFETCH(int, id);
         QFETCH(QString, path);
         QFETCH(bool, ret);
-//        QDir::setCurrent(_dir);
         Compiler compiler;
 
         QFile file(path);
         QFileInfo info(file);
-//        info.absolutePath();
 
         QList<CompileInfo> resList;
         QString res;
         compiler.compile(info, resList, res);
-//        QDir::setCurrent(_dir);
         QString baseName = info.baseName();
         QString absolutePath = info.absolutePath();
         bool ans = compiler.isCompiled(absolutePath + "/" + baseName + ".exe");

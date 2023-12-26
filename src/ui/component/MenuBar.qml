@@ -15,6 +15,7 @@ FluMenuBar{
         id: fileOpenDialog
         title: "选择一个文件"
         fileMode: FileDialog.OpenFile
+        nameFilters: ["C++ files (*.cpp *.hpp)","C files (*.c *.h)"]
         onAccepted: {
             console.log("You chose: " + fileOpenDialog.file)
             FileManager.openFile(fileOpenDialog.file)
@@ -35,6 +36,7 @@ FluMenuBar{
         id: filesSaveDialog
         title: lang.save_as
         fileMode: FileDialog.SaveFile
+        defaultSuffix: "cpp"
         onAccepted: {
             console.log("You chose: " + filesSaveDialog.file)
             FileManager.saveFileAs(filesSaveDialog.file)
@@ -92,7 +94,7 @@ FluMenuBar{
             text: lang.close+"(Ctrl+W)"
             shortcut: "Ctrl+W"
             onTriggered: {
-                FileManager.closeFile()
+                FileManager.canFileClose()
             }
         }
         FluMenuSeparator { }

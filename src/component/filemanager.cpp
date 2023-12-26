@@ -49,10 +49,12 @@ void FileManager::initFileSystem(QQmlEngine *engine)
 
 void FileManager::newFile(){
     QString id = "untitled"+QString::number(m_fileCnt);
+    QFile file;
     auto *f = new File;
     f->path="";
     f->title="untitled"+QString::number(m_fileCnt);
     f->hasSaved = false;
+    f->info = new QFileInfo(file);
     m_fileMap.insert(id, f);
     emit fileNew(id);
     m_fileCnt++;

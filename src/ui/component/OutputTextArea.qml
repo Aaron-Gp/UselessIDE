@@ -17,10 +17,12 @@ Item{
         clip: true
         flickableDirection: Flickable.AutoFlickIfNeeded
         ScrollBar.vertical: FluScrollBar {
+            id: scroll_vert
             width: 20
             rightPadding: 5
         }
         ScrollBar.horizontal: FluScrollBar{
+            id: scroll_hori
             width: 20
         }
 
@@ -41,7 +43,7 @@ Item{
             text: ""
             readOnly: true
             selectByKeyboard: false
-            cursorVisible: false
+            cursorVisible: true
             width: contentWidth + 20 < editor.width ? editor.width : contentWidth + 20
             height: contentHeight + 20 < editor.height ? editor.height : contentHeight + 20
             font.pointSize: 15
@@ -66,7 +68,13 @@ Item{
             Connections{
                 target: FileManager
                 function onFileCompileOutput(output){
+                    edit.clear()
                     edit.append(output)
+                    edit.cursorPosition = 0
+                    flick.contentX = 0
+                    flick.contentY = 0
+                    scroll_vert.position = 0
+                    scroll_hori.position = 0
                 }
             }
         }

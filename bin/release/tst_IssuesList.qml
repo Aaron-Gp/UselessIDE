@@ -55,9 +55,8 @@ Item {
         target: FileManager
         function onFileCompileIssues(resList){
             const dataSource = []
-            console.log("outer",resList.length)
-            for (var i = 0; i < resList.length-1; i++) {
-                console.log("inner",resList[i].length)
+            console.log("reslistLen",resList.length)
+            for (var i = 0; i < resList.length; i++) {
                 dataSource.push({
                     filename:resList[i][0],
                     line:resList[i][1],

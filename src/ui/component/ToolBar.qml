@@ -16,6 +16,7 @@ Row{
         id: fileOpenDialog
         title: "选择一个文件"
         fileMode: FileDialog.OpenFile
+        nameFilters: ["C++ files (*.cpp *.hpp)","C files (*.c *.h)"]
         onAccepted: {
             console.log("You chose: " + fileOpenDialog.file)
             FileManager.openFile(fileOpenDialog.file)
@@ -26,6 +27,7 @@ Row{
         id: filesSaveDialog
         title: "文件另存为"
         fileMode: FileDialog.SaveFile
+        defaultSuffix: "cpp"
         onAccepted: {
             console.log("You chose: " + filesSaveDialog.file)
             FileManager.saveFileAs(filesSaveDialog.file)

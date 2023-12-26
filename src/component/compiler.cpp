@@ -22,9 +22,12 @@ bool Compiler::compile(QFileInfo fileInfo, QList<CompileInfo> &resultList, QStri
         result = "Cannot find the gcc.\n";
         return false;
     }
-    QString originalPath = QCoreApplication::applicationFilePath();//记录原始路径
-    if(!QDir::setCurrent(gccPathCurrent)){//尝试切换到gcc的路径
+    if(!QFileInfo(gccPathCurrent+"\\gcc.exe").isFile()){//尝试切换到gcc的路径
         result = "Cannot find the gcc.\n";
+        return false;
+    }
+    if(!fileInfo.exists()){
+        result = "File does not exists\n";
         return false;
     }
     QString baseName = fileInfo.baseName();//不带后缀的文件名
@@ -36,14 +39,14 @@ bool Compiler::compile(QFileInfo fileInfo, QList<CompileInfo> &resultList, QStri
     QElapsedTimer timer;
     timer.start();//计时开始
     if (suffix == "c") {
-        QString program = "gcc.exe";
+        QString program = gccPathCurrent + "\\gcc.exe";
         QStringList arguments;
         arguments << "-g3" << "-pipe" << "-o" << absolutePath + "/" + baseName + ".exe" << absolutePath + "/" + baseName + '.' + suffix;
         command = program + " \"" + absolutePath + "/" + baseName + '.' + suffix + "\" -o \"" + absolutePath + "/" + baseName + ".exe\"" + " -g3 -pipe";
         process.start(program, arguments);
         //gcc.exe    -o absolutePath/baseName.exe absolutePath/baseName.suffix
     } else if (suffix == "cpp") {
-        QString program = "g++.exe";
+        QString program = gccPathCurrent + "\\g++.exe";
         QStringList arguments;
         arguments << "-g3" << "-pipe" << "-o" << absolutePath + "/" + baseName + ".exe" << absolutePath + "/" + baseName + '.' + suffix;
         command = program + " \"" + absolutePath + "/" + baseName + '.' + suffix + "\" -o \"" + absolutePath + "/" + baseName + ".exe\"" + " -g3 -pipe";
@@ -51,12 +54,10 @@ bool Compiler::compile(QFileInfo fileInfo, QList<CompileInfo> &resultList, QStri
     } else {
         result = "Compile unsuccessfully.\n"
                  "The file's suffix must be .c or .cpp.";
-        QDir::setCurrent(originalPath);//切换回原来的路径
         return false;//文件不是c或者c++文件，不能编译
     }
     process.waitForFinished();
     double compileTime = (double)timer.nsecsElapsed()/(double)1000000;//计时结束
-    QDir::setCurrent(originalPath);//切换回原来的路径
     QByteArray resultByte = process.readAllStandardError();//获得编译的错误反馈
     result = "";//result初始化
     result = QString::fromLocal8Bit(resultByte);
@@ -72,14 +73,6 @@ bool Compiler::run(QFileInfo fileInfo, QList<CompileInfo> &resultList, QString &
     QString baseName = fileInfo.baseName();//不带后缀的文件名
     QString absolutePath = fileInfo.absolutePath();//不带文件名的绝对路径(即包含文件的文件夹路径)
 
-//    //判断是否编译过了
-//    if(!isCompiled(absolutePath + "/" + baseName + ".exe")){
-//        if(QMessageBox::Yes == QMessageBox::question(NULL,"Confirm","源代码未编译。\n是否立即编译?",QMessageBox::Yes|QMessageBox::No,QMessageBox::Yes)){
-//            return compileAndRun(fileInfo, resultList, result);//如果要编译后运行就直接编译后运行
-//        }else{
-//            return false;//不编译就直接退出
-//        }
-//    }
     if(!isCompiled(absolutePath + "/" + baseName + ".exe")){//没有编译过就编译并运行
         return compileAndRun(fileInfo, resultList, result);
     }
@@ -175,23 +168,20 @@ bool Compiler::resultToResultList(QString result, QList<CompileInfo> &resultList
 }
 
 void Compiler::resultProcessing(QFileInfo fileInfo, QString &result, int numError, int numWarning, double compilationTime, QString command){
-    QString originalPath = QCoreApplication::applicationFilePath();//记录原始路径
     QString beforeResult, afterResult, type, version;
-    QDir::setCurrent(gccPathCurrent);
+    fileInfo.absoluteFilePath();
     if(fileInfo.suffix() == "c"){
         type = "";
         QProcess process;
-        process.start("gcc.exe",{"--version"});
+        process.start(gccPathCurrent+"\\gcc.exe",{"--version"});
         process.waitForFinished();
-        QDir::setCurrent(originalPath);//切换回原来的路径
         QByteArray output = process.readAllStandardOutput();
         version = QString::fromLocal8Bit(output).split("\n")[0];//获得版本
     }else{
         type = "++";
         QProcess process;
-        process.start("g++.exe",{"--version"});
+        process.start(gccPathCurrent+"\\g++.exe",{"--version"});
         process.waitForFinished();
-        QDir::setCurrent(originalPath);//切换回原来的路径
         QByteArray output = process.readAllStandardOutput();
         version = QString::fromLocal8Bit(output).split("\n")[0];//获得版本
     }
@@ -230,7 +220,9 @@ bool Compiler::findGccPath(){
     }
     for(QString &str : pathWithBin){//在每个带\bin的路径判断是否有gcc.exe
         if(QFileInfo(str+"\\gcc.exe").isFile()){
-            gccPathList.append(str);
+            if(gccPathList.indexOf(str)==-1){
+                gccPathList.append(str);
+            }
         }
     }
     if(gccPathList.isEmpty()){
@@ -241,17 +233,21 @@ bool Compiler::findGccPath(){
 
 bool Compiler::addGccPath(QString gccPath){
     if(QFileInfo(gccPath+"\\gcc.exe").isFile()){
-        gccPathList.append(gccPath);
-        gccPathCurrent = gccPath;
-        return true;
+        if(!gccPathList.contains(gccPath)){
+            gccPathList.append(gccPath);
+            gccPathCurrent = gccPath;
+            return true;
+        }
     }
     return false;
 }
 
 bool Compiler::changeGccPath(QString gccPath){
-    if(QFileInfo(gccPath+"\\gcc.exe").isFile()){
-        gccPathCurrent = gccPath;
-        return true;
+    if(gccPathList.contains(gccPath)){
+        if(QFileInfo(gccPath+"\\gcc.exe").isFile()){
+            gccPathCurrent = gccPath;
+            return true;
+        }
     }
     return false;
 }
@@ -264,6 +260,8 @@ bool Compiler::deleteGccPath(QString gccPath){
     gccPathList.removeAt(index);
     if(!gccPathList.isEmpty()){
         gccPathCurrent = gccPathList[0];
+    }else{
+        gccPathCurrent = "";
     }
     return true;
 }

@@ -76,6 +76,7 @@ signals:
     Q_SIGNAL void fileOpen(QString id, QString title, QString content);
     Q_SIGNAL void fileSave(QString id);
     Q_SIGNAL void fileClose();
+    Q_SIGNAL void canFileClose();
     Q_SIGNAL void fileSavingAs(QString id, QString title);
     Q_SIGNAL void fileConfirm(QString id);
     Q_SIGNAL void showError(QString msg);
