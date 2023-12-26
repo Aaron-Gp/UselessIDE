@@ -52,3 +52,12 @@ compile_commands.json
 *creator.user*
 
 *_qmlcache.qrc
+
+bin/debug
+
+bin/release/bin
+bin/release/res
+bin/release/ui
+bin/release/test
+bin/release/*.exe*
+bin/release/*.dll*

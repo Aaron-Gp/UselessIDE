@@ -5,7 +5,7 @@
 #include <QQuickPaintedItem>
 #include <QPainter>
 #include <QPropertyAnimation>
-#include "stdafx.h"
+#include "../stdafx.h"
 
 class CircularReveal : public QQuickPaintedItem
 {

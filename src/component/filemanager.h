@@ -5,9 +5,9 @@
 #include <QDir>
 #include <QQmlEngine>
 #include <QQuickTextDocument>
-#include <component/highlighter.h>
-#include <component/compiler.h>
-#include <component/cursorcommand.h>
+#include "highlighter.h"
+#include "compiler.h"
+#include "cursorcommand.h"
 #include <QFileSystemModel>
 
 struct File{

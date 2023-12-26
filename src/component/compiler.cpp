@@ -1,4 +1,4 @@
-#include "compiler.h"
+﻿#include "compiler.h"
 
 #include <windows.h>
 #include <QProcess>

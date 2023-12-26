@@ -5,7 +5,7 @@
 #include <QFile>
 #include <QMutex>
 #include <QMutexLocker>
-#include <component/codeformatter.h>
+#include "codeformatter.h"
 #include <QModelIndex>
 
 FileManager* FileManager::m_instance = 0;

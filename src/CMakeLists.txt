@@ -23,64 +23,92 @@ file(TO_CMAKE_PATH "/" PATH_SEPARATOR)
 #设置版本号
 #add_definitions(-DVERSION=0,0,1,0)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick Svg)
+find_package(Qt6 REQUIRED COMPONENTS Core Quick Svg Test QuickTest)
 
-if(QT_VERSION VERSION_GREATER_EQUAL "6.3")
-    qt_standard_project_setup()
-else()
-    set(CMAKE_AUTOMOC ON)
-    set(CMAKE_AUTORCC ON)
-    set(CMAKE_AUTOUIC ON)
-endif()
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
 
 #遍历所有Cpp文件
 file(GLOB_RECURSE CPP_FILES *.cpp *.h *.hpp)
+
+FOREACH(item ${CPP_FILES})
+  IF(${item} MATCHES ".*test.*")
+    LIST(REMOVE_ITEM CPP_FILES ${item})
+  ENDIF(${item} MATCHES ".*test.*")
+ENDFOREACH(item)
+#message("files: ${CPP_FILES}")
+
 foreach(filepath ${CPP_FILES})
     string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/" "" filename ${filepath})
     list(APPEND sources_files ${filename})
 endforeach(filepath)
 
+file(GLOB_RECURSE HEADER_FILES *.h)
+FOREACH(item ${HEADER_FILES})
+  IF(${item} MATCHES ".*test.*")
+    LIST(REMOVE_ITEM HEADER_FILES ${item})
+  ENDIF(${item} MATCHES ".*test.*")
+ENDFOREACH(item)
+FOREACH(item ${HEADER_FILES})
+  IF(${item} MATCHES ".*main.cpp")
+    LIST(REMOVE_ITEM HEADER_FILES ${item})
+  ENDIF(${item} MATCHES ".*main.cpp")
+ENDFOREACH(item)
+foreach(filepath ${HEADER_FILES})
+    string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/" "" filename ${filepath})
+    list(APPEND header_files ${filename})
+endforeach(filepath)
+
+qt_add_library(IDELib STATIC ${sources_files})
+target_link_libraries(IDELib
+    Qt6::Core
+    Qt6::Quick
+    Qt6::Svg
+    Qt6::Test
+    fluentuiplugin
+    FramelessHelper::Core
+    FramelessHelper::Quick
+)
+#qt_finalize_target(IDELib)
+
 #遍历所有qml文件
 file(GLOB_RECURSE QML_PATHS *.qml)
 foreach(filepath ${QML_PATHS})
     string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/" "" filename ${filepath})
+#    get_filename_component(abname ${filename} ABSOLUTE)
     list(APPEND qml_files ${filename})
+#    message(${abname})
 endforeach(filepath)
 
 #遍历所有资源文件
 file(GLOB_RECURSE RES_PATHS *.png *.jpg *.svg *.ico *.ttf *.webp qmldir *.txt)
 foreach(filepath ${RES_PATHS})
     string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/" "" filename ${filepath})
+#    get_filename_component(abname ${filename} ABSOLUTE)
     list(APPEND resource_files ${filename})
+#    message(${abname})
 endforeach(filepath)
 
 #添加可执行文件
-if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    qt_add_executable(UselessIDE
-        ${sources_files}
-    )
-else ()
-    qt_add_executable(UselessIDE
-        ${sources_files}
-    )
-endif ()
-
-#复制动态库到可执行文件同级目录下
-#if(WIN32)
-#    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-#        set(DLLPATH ${CMAKE_SOURCE_DIR}/3rdparty/dll/msvc/*.dll)
-#    else()
-#        set(DLLPATH ${CMAKE_SOURCE_DIR}/3rdparty/dll/mingw/*.dll)
-#    endif()
-#    string(REPLACE "/" ${PATH_SEPARATOR} DLLPATH "${DLLPATH}")
-#    file(GLOB DLL_FILES ${DLLPATH})
-#    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-#        COMMAND ${CMAKE_COMMAND} -E copy
-#        ${DLL_FILES}
-#        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+#    qt_add_executable(UselessIDE
+#        ${sources_files}
 #    )
-#endif()
 
+# 复制测试文件到输出目录
+file(GLOB_RECURSE TEST_QML *.qml)
+foreach(filepath ${TEST_QML})
+    IF(${filepath} MATCHES ".*tst.*")
+        message("xxxxxxxxxxxxx ${filepath}")
+        string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/" "" filename ${filepath})
+        file(COPY ${filename} DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+    ENDIF(${filepath} MATCHES ".*tst.*")
+endforeach(filepath)
+
+
+qt_add_executable(UselessIDE
+    ${sources_files}
+)
 #添加qml模块
 qt_add_qml_module(UselessIDE
     URI UselessIDE
@@ -89,6 +117,14 @@ qt_add_qml_module(UselessIDE
     RESOURCES ${resource_files}
     OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/UselessIDE
 )
+
+#qt_add_qml_module(IDELib
+#    URI IDELib
+#    VERSION 1.0
+#    QML_FILES ${qml_files}
+#    RESOURCES ${resource_files}
+#    OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+#)
 
 #设置属性
 set_target_properties(UselessIDE PROPERTIES
@@ -103,6 +139,8 @@ set_target_properties(UselessIDE PROPERTIES
 target_link_libraries(UselessIDE PRIVATE
     Qt6::Quick
     Qt6::Svg
+    Qt6::Test
+    Qt6::QuickTest
     fluentuiplugin
     FramelessHelper::Core
     FramelessHelper::Quick
@@ -114,3 +152,5 @@ install(TARGETS UselessIDE
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+add_subdirectory(test)
